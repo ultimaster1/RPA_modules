@@ -2,40 +2,27 @@ from tkinter import *
 from tkinter.ttk import *
 from tkinter import messagebox as mb
 from tkinter import filedialog
-from functools import partial
 import ctypes
 import docreader
 import mail
-import tess_test
-import infinity_suffer
-import log_maker
+import scan
 
 
 
 class tkinter_interface():
     def __init__(self):
         self.pathes = {'doc_topics' : None, 'doc_spaces' : None, 'doc_final' : None,
-                       'mail_path' : None, 'scan_doc' : None, 'scan_pdf' : None,
-                       'statistics_log_record' : None,'statistics_log_txt' : None,'statistics_log_csv' : None}
+                       'mail_path' : None, 'scan_doc' : None, 'scan_scan' : None}
         self.main_window = None
         self.mail_login = None
         self.mail_password = None
         self.mail_number = None
         self.mail_subject = None
-        # self.doc_topics = None
-        # self.doc_spaces = None
-        # self.doc_final = None
-        # self.mail_path = None
-        # self.scan_doc = None
-        # self.scan_pdf = None
-        # self.scan_final = None
-        # self.statistics_log_record = None
-        # self.statistics_log_txt = None
-        # self.statistics_log_csv = None
 
 
     def file_path_changer(self,key):
         self.pathes[key] = filedialog.askopenfilename()
+
 
     def folder_path_changer(self,key):
         self.pathes[key] = filedialog.askdirectory()
@@ -61,20 +48,20 @@ class tkinter_interface():
 
 
     def doc_interface(self):
-        newWindow = Toplevel(self.main_window)
-        newWindow.title("Модуль для docx")
-        newWindow.geometry("400x400")
-        Label(newWindow, text="Заполните пути").pack()
-        path_to_topics = Button(newWindow,
+        docWindow = Toplevel(self.main_window)
+        docWindow.title("Модуль для документов")
+        docWindow.geometry("400x400")
+        Label(docWindow, text="Заполните пути").pack()
+        path_to_topics = Button(docWindow,
                                 text="Путь к файлу с информацией",
                                 command= lambda: self.file_path_changer('doc_topics'))
-        path_to_spaces = Button(newWindow,
+        path_to_spaces = Button(docWindow,
                                 text="Путь к файлу с пробелами",
                                 command= lambda: self.file_path_changer('doc_spaces'))
-        path_to_final_file = Button(newWindow,
+        path_to_final_file = Button(docWindow,
                                 text="Путь к итоговому файлу",
                                 command= lambda: self.folder_path_changer('doc_final'))
-        start = Button(newWindow,text="Заполнить пробелы", command=self.doc_realize)
+        start = Button(docWindow,text="Заполнить пробелы", command=self.doc_realize)
         path_to_topics.pack(pady=10)
         path_to_spaces.pack(pady=10)
         path_to_final_file.pack(pady=10)
@@ -121,31 +108,56 @@ class tkinter_interface():
         self.main_window.destroy()
         self.main_window = Tk()
         self.main_window.geometry('200x150')
-        self.main_window.title('Tkinter Login Form - pythonexamples.org')
-
-        # username label and text entry box
+        self.main_window.title('Модуль для мыла')
         usernameLabel = Label(self.main_window, text="Логин").grid(row=0, column=0)
         username = StringVar()
         usernameEntry = Entry(self.main_window, textvariable=username).grid(row=0, column=1)
 
-        # password label and password entry box
         passwordLabel = Label(self.main_window, text="Пароль").grid(row=1, column=0)
         password = StringVar()
         passwordEntry = Entry(self.main_window, textvariable=password, show='*').grid(row=1, column=1)
 
-        # subject label and text entry box
         subjectLabel = Label(self.main_window, text="Тема").grid(row=2, column=0)
         subject = StringVar()
         subjectEntry = Entry(self.main_window, textvariable=subject).grid(row=2, column=1)
 
-        # subject label and text entry box
         numberofEmails = Label(self.main_window, text="Кол-во").grid(row=3, column=0)
         emailN = StringVar()
         emailNEntry = Entry(self.main_window, textvariable=emailN).grid(row=3, column=1)
 
-        # login button
         loginButton = Button(self.main_window, text="Путь", command=lambda: self.mail_additional(username, password, subject, emailN)).grid(row=4, column=0)
         self.main_window.mainloop()
+
+
+    def scan_reilize(self):
+        path_1 = self.pathes['scan_doc']
+        path_2 = self.pathes['scan_scan']
+        if path_1 and path_2:
+            I_R = scan.image_pdf_reader(main_file = path_1,comp_file = path_2)
+            I_R.img_to_text()
+            I_R.text_to_lst()
+            mb.showinfo(title='Результат', message=I_R.compare('l'))
+            self.pathes['scan_doc'] = None
+            self.pathes['scan_scan'] = None
+        else:
+            ctypes.windll.user32.MessageBoxW(0, u"Сначала укажите пути для всех файлов", u"Ошибка", 0)
+
+
+    def scan_interface(self):
+        scanWindow = Toplevel(self.main_window)
+        scanWindow.title("Модуль для сканов")
+        scanWindow.geometry("400x400")
+        Label(scanWindow, text="Заполните пути").pack()
+        path_to_topics = Button(scanWindow,
+                                text="Путь документу",
+                                command= lambda: self.file_path_changer('scan_doc'))
+        path_to_spaces = Button(scanWindow,
+                                text="Путь к изображению",
+                                command= lambda: self.file_path_changer('scan_scan'))
+        start = Button(scanWindow,text="Сравнить документы", command=self.scan_reilize)
+        path_to_topics.pack(pady=10)
+        path_to_spaces.pack(pady=10)
+        start.pack(pady=10)
 
 
 if __name__ == '__main__':
@@ -162,12 +174,9 @@ if __name__ == '__main__':
                  command=T_I.mail_interface)
     mod_3 = Button(T_I.main_window,
                  text=" Модуль для считывания текста со скана",
-                 command=T_I.doc_interface)
-    mod_4 = Button(T_I.main_window,
-                 text="Модуль для сбора статистики",
-                 command=T_I.doc_interface)
+                 command=T_I.scan_interface)
     mod_1.pack(pady=10)
     mod_2.pack(pady=10)
     mod_3.pack(pady=10)
-    mod_4.pack(pady=10)
     T_I.main_window.mainloop()
+
